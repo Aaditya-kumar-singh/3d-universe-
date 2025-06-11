@@ -9,5 +9,11 @@ export default defineConfig({
     host: true,
     open: true
   },
-  base: '/3d-universe-/'
+  base: '/3d-universe-/',
+  build: {
+    outDir: 'dist',
+    assetsDir: 'assets',
+    emptyOutDir: true,
+    sourcemap: false
+  }
 })
