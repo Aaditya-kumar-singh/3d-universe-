@@ -11,25 +11,26 @@ interface PlanetProps {
   color: string
   speed: number
   inclination: number
+  phase: number
   texture?: string
 }
 
-export default function Planet({ name, size, distance, color, speed, inclination }: PlanetProps) {
+export default function Planet({ name, size, distance, color, speed, inclination, phase }: PlanetProps) {
   const groupRef = useRef<Group>(null)
   const meshRef = useRef<Mesh>(null)
   const time = useRef(0)
   const [showMessage, setShowMessage] = useState(false)
   const [isHovered, setIsHovered] = useState(false)
 
-  useFrame((state, delta) => {
+  useFrame((_, delta) => {
     if (groupRef.current && meshRef.current) {
-      // Update orbital position
+      // Update orbital position with phase offset
       time.current += delta * speed
-      const x = Math.cos(time.current) * distance
-      const z = Math.sin(time.current) * distance
+      const x = Math.cos(time.current + phase) * distance
+      const z = Math.sin(time.current + phase) * distance
       
       // Apply orbital inclination
-      const y = Math.sin(time.current) * Math.sin(inclination) * distance
+      const y = Math.sin(time.current + phase) * Math.sin(inclination) * distance
       
       // Update planet position
       groupRef.current.position.set(x, y, z)
