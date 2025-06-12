@@ -1,6 +1,6 @@
 import { useRef, useMemo } from 'react'
 import { useFrame } from '@react-three/fiber'
-import { PointLight, SpotLight, AmbientLight, Vector3, ShaderMaterial, AdditiveBlending } from 'three'
+import { PointLight, SpotLight, AmbientLight, Vector3, ShaderMaterial, AdditiveBlending, ShaderMaterialParameters } from 'three'
 import { useHelper } from '@react-three/drei'
 
 // Custom shader for light rays
@@ -51,7 +51,7 @@ export default function LightingSystem({ sunPosition, intensity = 2 }: LightingS
 
   // Create shader material for light rays
   const rayMaterial = useMemo(() => {
-    return {
+    const materialParams: ShaderMaterialParameters = {
       uniforms: {
         time: { value: 0 },
         sunPosition: { value: sunPosition }
@@ -61,7 +61,8 @@ export default function LightingSystem({ sunPosition, intensity = 2 }: LightingS
       transparent: true,
       blending: AdditiveBlending,
       depthWrite: false
-    } as ShaderMaterial
+    }
+    return new ShaderMaterial(materialParams)
   }, [sunPosition])
 
   useFrame((_, delta) => {
@@ -124,11 +125,7 @@ export default function LightingSystem({ sunPosition, intensity = 2 }: LightingS
       {/* Light rays effect */}
       <mesh position={[0, 0, 0]}>
         <sphereGeometry args={[50, 32, 32]} />
-        <shaderMaterial
-          attach="material"
-          args={[rayMaterial]}
-          side={1} // Back side
-        />
+        <primitive object={rayMaterial} attach="material" />
       </mesh>
     </group>
   )
