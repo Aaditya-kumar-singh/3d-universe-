@@ -2,10 +2,12 @@ import { Canvas } from '@react-three/fiber'
 import { OrbitControls, Stars } from '@react-three/drei'
 import { Suspense } from 'react'
 import SolarSystem from './components/SolarSystem'
+import Attribution from './components/Attribution'
 
 function App() {
   return (
     <div className="w-screen h-screen bg-black overflow-hidden">
+      <Attribution />
       <Canvas
         camera={{
           position: [0, 30, 30],
