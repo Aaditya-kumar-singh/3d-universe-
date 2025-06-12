@@ -1,6 +1,6 @@
 import { useRef, useMemo } from 'react'
 import { useFrame } from '@react-three/fiber'
-import { PointLight, SpotLight, AmbientLight, Vector3, Color } from 'three'
+import { PointLight, SpotLight, AmbientLight, Vector3, ShaderMaterial, AdditiveBlending } from 'three'
 import { useHelper } from '@react-three/drei'
 
 // Custom shader for light rays
@@ -59,16 +59,18 @@ export default function LightingSystem({ sunPosition, intensity = 2 }: LightingS
       vertexShader: lightRayShader.vertexShader,
       fragmentShader: lightRayShader.fragmentShader,
       transparent: true,
-      blending: 1, // Additive blending
+      blending: AdditiveBlending,
       depthWrite: false
-    }
+    } as ShaderMaterial
   }, [sunPosition])
 
   useFrame((_, delta) => {
     time.current += delta
 
     // Update shader uniforms
-    rayMaterial.uniforms.time.value = time.current
+    if (rayMaterial.uniforms) {
+      rayMaterial.uniforms.time.value = time.current
+    }
 
     // Animate sun light intensity
     if (sunLightRef.current) {

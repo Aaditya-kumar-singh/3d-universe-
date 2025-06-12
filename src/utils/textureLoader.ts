@@ -1,6 +1,6 @@
 import { TextureLoader } from 'three'
 import { useLoader } from '@react-three/fiber'
-import { MeshStandardMaterial } from 'three'
+import { MeshStandardMaterial, Vector2 } from 'three'
 
 // Cache for loaded textures
 const textureCache: { [key: string]: any } = {}
@@ -101,15 +101,15 @@ export function createPlanetMaterial(
   const material = new MeshStandardMaterial({
     map: diffuseMap,
     normalMap: normalMap,
-    normalScale: options.normalScale || 1,
+    normalScale: new Vector2(options.normalScale || 1, options.normalScale || 1),
     metalness: options.metalness || 0.1,
     roughness: options.roughness || 0.8,
     envMapIntensity: 1.0
   })
 
   if (specularMap) {
-    material.specularMap = specularMap
-    material.specularIntensity = 0.5
+    material.envMap = specularMap
+    material.envMapIntensity = 0.5
   }
 
   return material
