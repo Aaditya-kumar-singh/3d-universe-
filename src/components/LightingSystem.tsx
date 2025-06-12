@@ -1,7 +1,6 @@
 import { useRef, useMemo } from 'react'
 import { useFrame } from '@react-three/fiber'
 import { PointLight, SpotLight, AmbientLight, Vector3, ShaderMaterial, AdditiveBlending, ShaderMaterialParameters } from 'three'
-import { useHelper } from '@react-three/drei'
 
 // Custom shader for light rays
 const lightRayShader = {

@@ -1,6 +1,6 @@
 import { useRef } from 'react'
 import { useFrame } from '@react-three/fiber'
-import { Mesh, MeshStandardMaterial, Vector3 } from 'three'
+import { Mesh, Vector3 } from 'three'
 import { Environment } from '@react-three/drei'
 import Planet from './Planet'
 import Orbit from './Orbit'
