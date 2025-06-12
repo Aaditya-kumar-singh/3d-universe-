@@ -5,7 +5,6 @@ import { resolve } from 'path'
 // https://vitejs.dev/config/
 export default defineConfig({
   plugins: [react()],
-  base: '/3d-universe-/', // Correct for GitHub Pages deployment
   build: {
     outDir: 'dist',
     assetsDir: 'assets',
