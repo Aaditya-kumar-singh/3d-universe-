@@ -1,7 +1,7 @@
 import { useRef } from 'react'
 import { useFrame } from '@react-three/fiber'
-import { Mesh, MeshStandardMaterial } from 'three'
-import { usePlanetTextures, createPlanetMaterial } from '../utils/textureLoader'
+import { Vector3, Mesh } from 'three'
+import { createPlanetMaterial } from '../utils/textureLoader'
 
 interface PlanetProps {
   name: string
@@ -13,41 +13,36 @@ interface PlanetProps {
   phase: number
 }
 
-export default function Planet({ name, size, distance, color, speed, inclination, phase }: PlanetProps) {
-  const meshRef = useRef<Mesh>(null)
-  const { diffuseMap, normalMap, specularMap } = usePlanetTextures(name)
+export default function Planet({ name, size, distance, speed, inclination, phase }: PlanetProps) {
+  const planetRef = useRef<Mesh>(null)
+  const time = useRef(Date.now() * 0.001)
 
   useFrame((_, delta) => {
-    if (meshRef.current) {
-      // Rotate the planet
-      meshRef.current.rotation.y += delta * 0.5
+    if (planetRef.current) {
+      // Update time
+      time.current += delta
 
-      // Orbit around the sun
-      const time = Date.now() * 0.001 * speed
-      const x = Math.cos(time + phase) * distance
-      const z = Math.sin(time + phase) * distance
-      const y = Math.sin(time + phase) * distance * inclination
+      // Calculate orbital position
+      const angle = time.current * speed + phase
+      const x = Math.cos(angle) * distance
+      const z = Math.sin(angle) * distance
+      const y = Math.sin(angle) * distance * inclination
 
-      meshRef.current.position.set(x, y, z)
+      // Update position
+      planetRef.current.position.set(x, y, z)
+
+      // Rotate planet
+      planetRef.current.rotation.y += delta * 0.5
     }
   })
 
-  // Create material with textures or fallback to basic material
-  const material = diffuseMap
-    ? createPlanetMaterial(diffuseMap, normalMap, specularMap, {
-        metalness: 0.1,
-        roughness: 0.8,
-        normalScale: 1
-      })
-    : new MeshStandardMaterial({
-        color,
-        metalness: 0.1,
-        roughness: 0.8
-      })
+  // Create material with textures
+  const material = createPlanetMaterial(name)
 
   return (
-    <mesh ref={meshRef} material={material} castShadow receiveShadow>
+    <mesh ref={planetRef} castShadow receiveShadow>
       <sphereGeometry args={[size, 64, 64]} />
+      <primitive object={material} attach="material" />
     </mesh>
   )
 } 

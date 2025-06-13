@@ -1,116 +1,64 @@
-import { TextureLoader } from 'three'
+import { TextureLoader, MeshStandardMaterial, Vector2, Color } from 'three'
 import { useLoader } from '@react-three/fiber'
-import { MeshStandardMaterial, Vector2 } from 'three'
+
+// Fallback colors for planets
+const PLANET_COLORS = {
+  mercury: '#8C7853',
+  venus: '#FFC649',
+  earth: '#6B93D6',
+  mars: '#CD5C5C',
+  jupiter: '#D8CA9D',
+  saturn: '#FAD5A5',
+  uranus: '#4FD0E7',
+  neptune: '#4B70DD'
+}
 
 // Cache for loaded textures
-const textureCache: { [key: string]: any } = {}
+const textureCache = new Map()
 
-// NASA texture URLs
-const TEXTURE_URLS = {
-  Mercury: {
-    diffuse: 'https://raw.githubusercontent.com/mrdoob/three.js/dev/examples/textures/planets/mercury.jpg',
-    normal: 'https://raw.githubusercontent.com/mrdoob/three.js/dev/examples/textures/planets/mercury_normal.jpg',
-    specular: 'https://raw.githubusercontent.com/mrdoob/three.js/dev/examples/textures/planets/mercury_specular.jpg'
-  },
-  Venus: {
-    diffuse: 'https://raw.githubusercontent.com/mrdoob/three.js/dev/examples/textures/planets/venus.jpg',
-    normal: 'https://raw.githubusercontent.com/mrdoob/three.js/dev/examples/textures/planets/venus_normal.jpg',
-    specular: 'https://raw.githubusercontent.com/mrdoob/three.js/dev/examples/textures/planets/venus_specular.jpg'
-  },
-  Earth: {
-    diffuse: 'https://raw.githubusercontent.com/mrdoob/three.js/dev/examples/textures/planets/earth.jpg',
-    normal: 'https://raw.githubusercontent.com/mrdoob/three.js/dev/examples/textures/planets/earth_normal.jpg',
-    specular: 'https://raw.githubusercontent.com/mrdoob/three.js/dev/examples/textures/planets/earth_specular.jpg'
-  },
-  Mars: {
-    diffuse: 'https://raw.githubusercontent.com/mrdoob/three.js/dev/examples/textures/planets/mars.jpg',
-    normal: 'https://raw.githubusercontent.com/mrdoob/three.js/dev/examples/textures/planets/mars_normal.jpg',
-    specular: 'https://raw.githubusercontent.com/mrdoob/three.js/dev/examples/textures/planets/mars_specular.jpg'
-  },
-  Jupiter: {
-    diffuse: 'https://raw.githubusercontent.com/mrdoob/three.js/dev/examples/textures/planets/jupiter.jpg',
-    normal: 'https://raw.githubusercontent.com/mrdoob/three.js/dev/examples/textures/planets/jupiter_normal.jpg',
-    specular: 'https://raw.githubusercontent.com/mrdoob/three.js/dev/examples/textures/planets/jupiter_specular.jpg'
-  },
-  Saturn: {
-    diffuse: 'https://raw.githubusercontent.com/mrdoob/three.js/dev/examples/textures/planets/saturn.jpg',
-    normal: 'https://raw.githubusercontent.com/mrdoob/three.js/dev/examples/textures/planets/saturn_normal.jpg',
-    specular: 'https://raw.githubusercontent.com/mrdoob/three.js/dev/examples/textures/planets/saturn_specular.jpg'
-  },
-  Uranus: {
-    diffuse: 'https://raw.githubusercontent.com/mrdoob/three.js/dev/examples/textures/planets/uranus.jpg',
-    normal: 'https://raw.githubusercontent.com/mrdoob/three.js/dev/examples/textures/planets/uranus_normal.jpg',
-    specular: 'https://raw.githubusercontent.com/mrdoob/three.js/dev/examples/textures/planets/uranus_specular.jpg'
-  },
-  Neptune: {
-    diffuse: 'https://raw.githubusercontent.com/mrdoob/three.js/dev/examples/textures/planets/neptune.jpg',
-    normal: 'https://raw.githubusercontent.com/mrdoob/three.js/dev/examples/textures/planets/neptune_normal.jpg',
-    specular: 'https://raw.githubusercontent.com/mrdoob/three.js/dev/examples/textures/planets/neptune_specular.jpg'
-  }
-}
-
-// Custom hook to load textures with caching
 export function usePlanetTextures(planetName: string) {
-  const urls = TEXTURE_URLS[planetName as keyof typeof TEXTURE_URLS]
-  
-  if (!urls) {
-    console.warn(`No textures found for planet: ${planetName}`)
-    return {
-      diffuseMap: null,
-      normalMap: null,
-      specularMap: null
+  const basePath = '/textures/planets'
+  const planetKey = planetName.toLowerCase()
+
+  // Try to load textures from cache first
+  const cachedTextures = textureCache.get(planetKey)
+  if (cachedTextures) {
+    return cachedTextures
+  }
+
+  // Load textures with error handling
+  const loadTexture = (type: string) => {
+    try {
+      return useLoader(TextureLoader, `${basePath}/${planetKey}_${type}.jpg`)
+    } catch (error) {
+      console.warn(`Failed to load ${planetKey} ${type} texture:`, error)
+      return null
     }
   }
 
-  try {
-    const diffuseMap = useLoader(TextureLoader, urls.diffuse)
-    const normalMap = useLoader(TextureLoader, urls.normal)
-    const specularMap = useLoader(TextureLoader, urls.specular)
+  const diffuseMap = loadTexture('diffuse')
+  const normalMap = loadTexture('normal')
+  const specularMap = loadTexture('specular')
 
-    // Cache the textures
-    textureCache[`${planetName}_diffuse`] = diffuseMap
-    textureCache[`${planetName}_normal`] = normalMap
-    textureCache[`${planetName}_specular`] = specularMap
+  // Store in cache
+  const textures = { diffuseMap, normalMap, specularMap }
+  textureCache.set(planetKey, textures)
 
-    return {
-      diffuseMap,
-      normalMap,
-      specularMap
-    }
-  } catch (error) {
-    console.error(`Error loading textures for ${planetName}:`, error)
-    return {
-      diffuseMap: null,
-      normalMap: null,
-      specularMap: null
-    }
-  }
+  return textures
 }
 
-// Function to create a material using the loaded textures
-export function createPlanetMaterial(
-  diffuseMap: any,
-  normalMap: any,
-  specularMap: any,
-  options: {
-    metalness?: number
-    roughness?: number
-    normalScale?: number
-  } = {}
-) {
-  const material = new MeshStandardMaterial({
-    map: diffuseMap,
-    normalMap: normalMap,
-    normalScale: new Vector2(options.normalScale || 1, options.normalScale || 1),
-    metalness: options.metalness || 0.1,
-    roughness: options.roughness || 0.8,
-    envMapIntensity: 1.0
+export function createPlanetMaterial(planetName: string) {
+  const planetKey = planetName.toLowerCase()
+  const textures = usePlanetTextures(planetName)
+  const color = new Color(PLANET_COLORS[planetKey as keyof typeof PLANET_COLORS] || '#FFFFFF')
+
+  return new MeshStandardMaterial({
+    map: textures.diffuseMap || null,
+    normalMap: textures.normalMap || null,
+    normalScale: new Vector2(0.5, 0.5),
+    roughnessMap: textures.specularMap || null,
+    roughness: 0.8,
+    metalness: 0.2,
+    color: color
   })
-
-  if (specularMap) {
-    material.envMap = specularMap
-    material.envMapIntensity = 0.5
-  }
-
-  return material
 } 
