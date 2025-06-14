@@ -1,10 +1,11 @@
-import { useRef } from 'react'
+import { useRef, useMemo, useCallback } from 'react'
 import { useFrame } from '@react-three/fiber'
 import { Mesh, Vector3 } from 'three'
 import { Environment } from '@react-three/drei'
 import Planet from './Planet'
 import Orbit from './Orbit'
 import LightingSystem from './LightingSystem'
+import ParticleSystems from './ParticleSystems'
 
 // Updated planet colors, names, and unique phase for each
 const PLANET_DATA = [
@@ -86,6 +87,21 @@ export default function SolarSystem() {
   const sunRef = useRef<Mesh>(null)
   const time = useRef(0)
   const sunPosition = new Vector3(0, 0, 0)
+  
+  // Get Saturn's data
+  const saturnData = PLANET_DATA.find(planet => planet.name === 'Saturn')
+  
+  // Calculate Saturn's position
+  const calculateSaturnPosition = useCallback(() => {
+    if (!saturnData) return new Vector3(44, 0, 0)
+    
+    const angle = time.current * saturnData.speed + saturnData.phase
+    const x = Math.cos(angle) * saturnData.distance
+    const z = Math.sin(angle) * saturnData.distance
+    const y = Math.sin(angle) * saturnData.distance * saturnData.inclination
+    
+    return new Vector3(x, y, z)
+  }, [saturnData, time])
 
   useFrame((_, delta) => {
     if (sunRef.current) {
@@ -97,6 +113,10 @@ export default function SolarSystem() {
     }
   })
 
+  // Find Saturn's speed from PLANET_DATA
+  const saturnSpeed = saturnData?.speed || 0.034
+  const saturnPosition = calculateSaturnPosition()
+
   return (
     <group>
       {/* Environment map for reflections */}
@@ -104,6 +124,13 @@ export default function SolarSystem() {
 
       {/* Lighting System */}
       <LightingSystem sunPosition={sunPosition} intensity={2} />
+
+      {/* Particle Systems */}
+      <ParticleSystems 
+        saturnPosition={saturnPosition} 
+        saturnSpeed={saturnSpeed}
+        time={time.current}
+      />
 
       {/* Sun */}
       <mesh ref={sunRef} position={sunPosition} castShadow>
