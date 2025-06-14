@@ -1,4 +1,4 @@
-import { TextureLoader, CanvasTexture, Color } from 'three'
+import { CanvasTexture } from 'three'
 
 // Create a more asteroid-like texture
 const createAsteroidTexture = (color: string = '#8C7853') => {

@@ -1,6 +1,6 @@
 import { useRef } from 'react'
 import { useFrame } from '@react-three/fiber'
-import { Vector3, Mesh } from 'three'
+import { Mesh } from 'three'
 import { createPlanetMaterial } from '../utils/textureLoader'
 
 interface PlanetProps {
